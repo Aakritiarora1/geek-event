@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Food Matcher Pro</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Trebuchet MS', sans-serif;
+    text-align: center;
+    color: #ffffff;
+    overflow-x: hidden;
+    background-color: #0f0c29;
+}
+
+/* BACKGROUND */
+.bg {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: -5;
+    display: none;
+}
+
+.overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(5,0,20,0.85), rgba(0,0,0,0.95));
+    z-index: -4;
+}
+
+/* Backgrounds */
+.login-bg { background-image: url('https://images.unsplash.com/photo-1498654896293-37aacf113fd9'); }
+.pref-bg { background-image: url('https://images.unsplash.com/photo-1521017432531-fbd92d768814'); }
+.cafe-bg { background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836'); }
+.history-bg { background-image: url('https://images.unsplash.com/photo-1470337458703-46ad1756a187'); }
+.thank-bg { background-image: url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085'); }
+.rate-bg { background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4'); }
+
+/* Sections */
+.section { display: none; padding: 40px; }
+
+/* Inputs & Buttons */
+input, button, select {
+    padding: 12px;
+    margin: 12px;
+    border-radius: 12px;
+    border: none;
+    font-size: 18px;
+}
+
+input, select {
+    background: rgba(0,0,0,0.7);
+    color: #00ffff;
+}
+
+button {
+    cursor: pointer;
+    background: #ff0080;
+    color: white;
+    box-shadow: 0 0 15px #ff0080;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #00ffff;
+}
+
+/* Card */
+.card {
+    width: 320px;
+    background: rgba(0,0,0,0.85);
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 0 25px #00ffff;
+}
+
+.price {
+    color: #ffcc00;
+    font-size: 20px;
+    text-shadow: 0 0 10px #ff0080;
+}
+
+.history-box {
+    background: rgba(0,0,0,0.75);
+    padding: 15px;
+    margin: 10px auto;
+    width: 300px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px #ff00cc;
+}
+
+.glow {
+    color: #00ffff;
+    animation: retroPulse 2.5s infinite alternate;
+}
+
+@keyframes retroPulse {
+    0% { text-shadow: 0 0 10px #ff00cc, 0 0 20px #00ffff; }
+    50% { text-shadow: 0 0 20px #00ffff, 0 0 40px #ff0080; }
+    100% { text-shadow: 0 0 10px #ff00cc, 0 0 20px #00ffff; }
+}
+
+/* Falling Ribbon Effect */
+.ribbon {
+    position: fixed;
+    width: 12px;
+    height: 25px;
+    background: linear-gradient(#ff0080, #00ffff);
+    top: -50px;
+    animation: fall linear forwards;
+    z-index: 100;
+}
+
+@keyframes fall {
+    to { transform: translateY(110vh) rotate(360deg); }
+}
+
+.star {
+    font-size: 40px;
+    cursor: pointer;
+    transition: 0.3s;
+    color: #555;
+}
+
+.star:hover,
+.star.active {
+    color: #ffcc00;
+    text-shadow: 0 0 15px #ff0080;
+    transform: scale(1.2);
+}
+
+.rating-box { margin-top: 30px; }
+
+</style>
+</head>
+
+<body>
+
+<div id="bg" class="bg"></div>
+<div class="overlay"></div>
+
+<!-- LOGIN -->
+<div id="login" class="section" style="display:block;">
+    <h2 class="glow">🍔 Welcome to Food Matcher Pro 🍟</h2>
+
+    <img src="https://images.unsplash.com/photo-1550547660-d9450f859349"
+         width="250"
+         style="border-radius:20px; box-shadow:0 0 30px #ff0080; margin:20px 0;">
+
+    <br>
+    <input type="text" id="phone" placeholder="Enter Phone Number">
+    <br>
+    <button onclick="login()">Enter</button>
+    <div id="loginMsg"></div>
+</div>
+
+<!-- PREFERENCES -->
+<div id="preferences" class="section">
+    <h2 class="glow">Select Your Preferences</h2>
+    <select id="prefSelect" multiple size="4">
+        <option value="spicy">🌶 Spicy</option>
+        <option value="cheap">💸 Cheap</option>
+        <option value="fast">⚡ Fast</option>
+        <option value="sweet">🍰 Sweet</option>
+    </select>
+    <br>
+    <button onclick="startMatching()">Start Matching</button>
+    <div id="prefMsg"></div>
+</div>
+
+<!-- MATCHING -->
+<div id="matching" class="section">
+    <h2 class="glow">Swipe & Decide</h2>
+    <div id="card" class="card">
+        <h3 id="item-name"></h3>
+        <p id="item-tags"></p>
+        <p id="item-price" class="price"></p>
+    </div>
+    <button id="nah">❌ Nah</button>
+    <button id="yeah">✅ Yeah</button>
+    <div id="matchMsg" class="glow"></div>
+    <br>
+    <button onclick="viewHistory()">View History</button>
+</div>
+
+<!-- HISTORY -->
+<div id="history" class="section">
+    <h2 class="glow">Match History</h2>
+    <div id="historyList"></div>
+    <div id="perfectMatchMsg" class="glow" style="margin-top:20px;"></div>
+    <button onclick="findPerfectMatch()">Find Perfect Match</button>
+    <br>
+    <button onclick="exitApp()">Exit</button>
+</div>
+
+<!-- RATE -->
+<div id="rate" class="section">
+    <h2 class="glow">⭐ Rate Our App ⭐</h2>
+    <div class="rating-box">
+        <span class="star" onclick="rate(1)">★</span>
+        <span class="star" onclick="rate(2)">★</span>
+        <span class="star" onclick="rate(3)">★</span>
+        <span class="star" onclick="rate(4)">★</span>
+        <span class="star" onclick="rate(5)">★</span>
+    </div>
+    <div id="ratingMsg" class="glow" style="margin-top:20px;"></div>
+</div>
+
+<script>
+
+const items = [
+    { name: "Pizza 🍕", tags: ["cheap","fast"], price: 199 },
+    { name: "Biryani 🍛", tags: ["spicy"], price: 249 },
+    { name: "Cake 🍰", tags: ["sweet"], price: 149 },
+    { name: "Burger 🍔", tags: ["cheap","fast"], price: 179 },
+    { name: "Sushi 🍣", tags: ["expensive"] }
+];
+
+let index = 0;
+let selectedTags = [];
+let history = [];
+
+function setBackground(type) {
+    const bg = document.getElementById("bg");
+    bg.className = "bg " + type;
+    bg.style.display = "block";
+}
+
+function showSection(id) {
+    document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+    document.getElementById(id).style.display = "block";
+
+    if(id==="login") setBackground("login-bg");
+    if(id==="preferences") setBackground("pref-bg");
+    if(id==="matching") setBackground("cafe-bg");
+    if(id==="history") setBackground("history-bg");
+    if(id==="rate") setBackground("rate-bg");
+}
+
+function login() {
+    const phone = document.getElementById("phone").value;
+    if (phone.length < 10) {
+        document.getElementById("loginMsg").textContent = "Enter valid phone number.";
+        return;
+    }
+    showSection("preferences");
+}
+
+function startMatching() {
+    selectedTags = Array.from(document.getElementById("prefSelect").selectedOptions)
+                    .map(option => option.value);
+
+    if (selectedTags.length === 0) {
+        document.getElementById("prefMsg").textContent = "Select at least one preference.";
+        return;
+    }
+
+    index = 0;
+    showSection("matching");
+    showCard();
+}
+
+function showCard() {
+    if (index >= items.length) {
+        document.getElementById("card").innerHTML =
+            "<h3>No more items 🍽️</h3>";
+        return;
+    }
+
+    const item = items[index];
+    document.getElementById("item-name").textContent = item.name;
+    document.getElementById("item-tags").textContent =
+        "Tags: " + item.tags.join(", ");
+
+    const price = item.price !== undefined ? "₹" + item.price : "₹ Not Available";
+    document.getElementById("item-price").textContent =
+        "💰 Price: " + price;
+}
+
+document.getElementById("nah").onclick = function() {
+    index++;
+    showCard();
+};
+
+document.getElementById("yeah").onclick = function() {
+    const item = items[index];
+    const match = item.tags.some(tag => selectedTags.includes(tag));
+
+    if (match) {
+        history.push(item);
+        document.getElementById("matchMsg").textContent =
+            "🎉 MATCH FOUND: " + item.name;
+    }
+
+    index++;
+    showCard();
+};
+
+function viewHistory() {
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    history.forEach(item => {
+        const price = item.price !== undefined ? "₹" + item.price : "₹ Not Available";
+        list.innerHTML += 
+            `<div class="history-box">${item.name}<br>💰 ${price}</div>`;
+    });
+
+    document.getElementById("perfectMatchMsg").textContent = "";
+    showSection("history");
+}
+
+function findPerfectMatch() {
+    if (history.length === 0) {
+        document.getElementById("perfectMatchMsg").textContent =
+            "No matches yet.";
+        return;
+    }
+
+    document.getElementById("perfectMatchMsg").textContent =
+        "🏆 Perfect Match: " + history[0].name;
+
+    for (let i = 0; i < 30; i++) {
+        let ribbon = document.createElement("div");
+        ribbon.classList.add("ribbon");
+        ribbon.style.left = Math.random() * 100 + "vw";
+        ribbon.style.animationDuration = (Math.random() * 3 + 2) + "s";
+        document.body.appendChild(ribbon);
+        setTimeout(() => ribbon.remove(), 5000);
+    }
+}
+
+function exitApp() {
+    showSection("rate");
+}
+
+function rate(stars) {
+    document.querySelectorAll(".star").forEach((star, index) => {
+        star.classList.toggle("active", index < stars);
+    });
+
+    document.getElementById("ratingMsg").textContent =
+        "✨ Thank you for rating us " + stars + " stars! ✨";
+}
+
+showSection("login");
+
+</script>
+
+</body>
+</html>
